@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1015</width>
-    <height>658</height>
+    <width>1002</width>
+    <height>644</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <x>10</x>
      <y>10</y>
      <width>321</width>
-     <height>631</height>
+     <height>621</height>
     </rect>
    </property>
    <property name="title">
@@ -29,7 +29,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>30</y>
+      <y>40</y>
       <width>301</width>
       <height>221</height>
      </rect>
@@ -201,7 +201,7 @@
     <property name="geometry">
      <rect>
       <x>220</x>
-      <y>590</y>
+      <y>580</y>
       <width>89</width>
       <height>25</height>
      </rect>
@@ -1566,7 +1566,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>560</y>
+      <y>550</y>
       <width>89</width>
       <height>25</height>
      </rect>
@@ -1579,7 +1579,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>590</y>
+      <y>580</y>
       <width>89</width>
       <height>25</height>
      </rect>
@@ -1620,9 +1620,22 @@
     <rect>
      <x>340</x>
      <y>30</y>
-     <width>661</width>
+     <width>651</width>
      <height>241</height>
     </rect>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="tipButton">
+   <property name="geometry">
+    <rect>
+     <x>970</x>
+     <y>10</y>
+     <width>16</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>?</string>
    </property>
   </widget>
  </widget>

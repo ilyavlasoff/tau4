@@ -4,6 +4,8 @@ from Serializer import Serializer
 from TableModel import TableModel
 from Executor import Executor
 from PyQt5.QtGui import QPixmap
+from PyQt5 import QtCore
+from TipBoxController import TipBoxController
 import math
 import os
 import string
@@ -28,6 +30,7 @@ class MainWindowController(QtWidgets.QWidget):
 
         self.ui.saveButton.clicked.connect(self.save_to_file)
         self.ui.loadButton.clicked.connect(self.load_from_file)
+        self.ui.tipButton.clicked.connect(self.show_tip)
 
         self.ui.calcButton.clicked.connect(self.make_calculation)
         self.ui.saleTableWidget.cellChanged.connect(self.cell_changed)
@@ -121,64 +124,83 @@ class MainWindowController(QtWidgets.QWidget):
             QtWidgets.QMessageBox.critical(self, 'Error', 'Достигнут верхний предел значения')
             self.ui.saleTableWidget.item(row, column).setText(str(100))
 
+    def show_tip(self):
+        tip = TipBoxController()
+        tip.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        tip.exec_()
+
     def make_calculation(self):
-        W_val = self.ui.WSpinBox.value()
-        T_val = self.ui.TSpinBox.value()
-        Cp_val = self.ui.CpSpinBox.value()
-        Cx_val = self.ui.CxSpinBox.value()
-        Cd_val = self.ui.CdSpinBox.value()
-        Cy_val = self.ui.CySpinBox.value()
-        Dt_val = self.ui.DtSpinBox.value()
+        try:
+            W_val = self.ui.WSpinBox.value()
+            T_val = self.ui.TSpinBox.value()
+            Cp_val = self.ui.CpSpinBox.value()
+            Cx_val = self.ui.CxSpinBox.value()
+            Cd_val = self.ui.CdSpinBox.value()
+            Cy_val = self.ui.CySpinBox.value()
+            Dt_val = self.ui.DtSpinBox.value()
 
-        sales_values = []
-        for i in range(self.ui.saleTableWidget.rowCount()):
-            lower = self.ui.saleTableWidget.item(i, 0)
-            if not lower or not lower.text() or not str.isnumeric(lower.text()):
-                if i == 0:
-                    lower = 0
+            sales_values = []
+            for i in range(self.ui.saleTableWidget.rowCount()):
+                lower = self.ui.saleTableWidget.item(i, 0)
+                if not lower or not lower.text() or not str.isnumeric(lower.text()):
+                    if i == 0:
+                        lower = 0
+                    else:
+                        QtWidgets.QMessageBox.critical(self, 'Error', 'Неверно задан нижний предел скидки')
+                        return
                 else:
-                    QtWidgets.QMessageBox.critical(self, 'Error', 'Неверно задан нижний предел скидки')
-                    return
-            else:
-                lower = lower.text()
-            higher = self.ui.saleTableWidget.item(i, 1)
-            if not higher or not higher.text() or not str.isnumeric(higher.text()):
-                if i == self.ui.saleTableWidget.rowCount() - 1:
-                    higher = math.inf
+                    lower = lower.text()
+                higher = self.ui.saleTableWidget.item(i, 1)
+                if not higher or not higher.text() or not str.isnumeric(higher.text()):
+                    if i == self.ui.saleTableWidget.rowCount() - 1:
+                        higher = math.inf
+                    else:
+                        QtWidgets.QMessageBox.critical(self, 'Error', 'Неверно задан верхний предел скидки')
+                        return
                 else:
-                    QtWidgets.QMessageBox.critical(self, 'Error', 'Неверно задан верхний предел скидки')
+                    higher = higher.text()
+                coeff = self.ui.saleTableWidget.item(i, 2)
+                if not coeff or not coeff.text() or not str.isnumeric(coeff.text()):
+                    QtWidgets.QMessageBox.critical(self, 'Error', 'Неверно задан коэффициент скидки')
                     return
-            else:
-                higher = higher.text()
-            coeff = self.ui.saleTableWidget.item(i, 2)
-            if not coeff or not coeff.text() or not str.isnumeric(coeff.text()):
-                QtWidgets.QMessageBox.critical(self, 'Error', 'Неверно задан коэффициент скидки')
-                return
-            sales_values.append({
-                'lo': float(lower),
-                'hi': float(higher),
-                'cf':  float(coeff.text()) / 100
-            })
+                sales_values.append({
+                    'lo': float(lower),
+                    'hi': float(higher),
+                    'cf':  float(coeff.text()) / 100
+                })
+        except Exception:
+            QtWidgets.QMessageBox.critical(self, 'Error', 'Ошибка при чтении данных')
+            return
 
-        solver = Executor(W_val, T_val, Cp_val, Cx_val, Cd_val, Cy_val, Dt_val)
+        try:
+            solver = Executor(W_val, T_val, Cp_val, Cx_val, Cd_val, Cy_val, Dt_val)
 
-        solution_parameters = []
-        solution_parameters.append(solver.calculate_parameters())
-        for sale_value in sales_values:
-            solution_parameters.append(solver.calculate_parameters(sale_value['lo'], sale_value['hi'], sale_value['cf']))
+            solution_parameters = []
+            solution_parameters.append(solver.calculate_parameters())
+            for sale_value in sales_values:
+                solution_parameters.append(solver.calculate_parameters(sale_value['lo'], sale_value['hi'], sale_value['cf']))
 
-        best_parameter = sorted(solution_parameters, key=lambda x: x['s_sum'], reverse=False)[0]
-        best_index = solution_parameters.index(best_parameter)
-        self.print_result(solution_parameters, best_index)
-        file_path = self.draw_plot(solution_parameters[0])
-        pixmap = QPixmap(file_path)
-        self.ui.graphLabel.setEnabled(True)
-        self.ui.graphLabel.setPixmap(pixmap)
-        self.ui.graphLabel.resize(pixmap.width(), pixmap.height())
+            best_parameter = sorted(solution_parameters, key=lambda x: x['s_sum'], reverse=False)[0]
+            best_index = solution_parameters.index(best_parameter)
+
+        except Exception:
+            QtWidgets.QMessageBox.critical(self, 'Error', 'Ошибка при проведении расчетов')
+            return
+
+        try:
+            self.print_result(solution_parameters, best_index)
+            file_path = self.draw_plot(best_parameter)
+            pixmap = QPixmap(file_path)
+            self.ui.graphLabel.setEnabled(True)
+            self.ui.graphLabel.setPixmap(pixmap)
+            self.ui.graphLabel.resize(pixmap.width(), pixmap.height())
+        except Exception:
+            QtWidgets.QMessageBox.critical(self, 'Error', 'Ошибка при выводе данных')
+            return
 
     def print_result(self, solution_parameters, index_best):
         self.ui.resultTableView.model().clear()
-        self.ui.resultTableView.model().add_columns(11, None, ['n', 'K', 'Q\'', 'M', 't\'', 'P', 'Sx', 'Sд', 'Sп', 'Sу', 'S'])
+        self.ui.resultTableView.model().add_columns(11, None, ['n', 'K', 'Q\'', 'M\'', 't\'', 'P', 'Sx', 'Sд', 'Sп', 'Sу', 'S'])
         row_num = 0
 
         for row in solution_parameters:
@@ -195,10 +217,9 @@ class MainWindowController(QtWidgets.QWidget):
                 round(row['s_y'], 4),
                 round(row['s_sum'], 4)
             ], [row_num + 1])
-            if row_num == index_best:
-                pass
             row_num += 1
         self.ui.resultTableView.resizeColumnsToContents()
+        self.ui.resultTableView.model().primary_row = index_best
 
     def draw_plot(self, plot_data):
         fig, pl = plt.subplots(figsize=(6.5, 3.5))

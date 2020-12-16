@@ -1,7 +1,7 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import *
 import numpy as np
-from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QBrush
 
 
 class TableModel(QtCore.QAbstractTableModel):
@@ -19,6 +19,7 @@ class TableModel(QtCore.QAbstractTableModel):
         horizontal_header += [str(i) for i in range(len(horizontal_header), self.row_count)]
         self.vertical_header = vertical_header
         self.horizontal_header = horizontal_header
+        self.primary_row = None
 
     def setData(self, index, value, role: int = ...) -> bool:
         if not index.isValid():
@@ -39,6 +40,9 @@ class TableModel(QtCore.QAbstractTableModel):
                 return round(self.data_matrix[index.row()][index.column()], 2)
             except TypeError:
                 return self.data_matrix[index.row()][index.column()]
+        elif role == Qt.BackgroundColorRole:
+            if index.row() == self.primary_row:
+                return QBrush(Qt.yellow)
 
     def rowCount(self, index) -> int:
         return self.row_count
