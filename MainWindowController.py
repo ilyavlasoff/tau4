@@ -200,7 +200,7 @@ class MainWindowController(QtWidgets.QWidget):
 
     def print_result(self, solution_parameters, index_best):
         self.ui.resultTableView.model().clear()
-        self.ui.resultTableView.model().add_columns(11, None, ['n', 'K', 'Q\'', 'M\'', 't\'', 'P', 'Sx', 'Sд', 'Sп', 'Sу', 'S'])
+        self.ui.resultTableView.model().add_columns(13, None, ['n', 'K', 'Q\'', 'M\'', 't\'', 'ρ', 'P', 'Pд', 'Sx', 'Sд', 'Sп', 'Sу', 'S'])
         row_num = 0
 
         for row in solution_parameters:
@@ -210,7 +210,9 @@ class MainWindowController(QtWidgets.QWidget):
                 round(row['q_opt'], 4),
                 round(row['m_opt'], 4),
                 round(row['t_opt'], 4),
+                round(row['lossd'], 4),
                 round(row['ord_opt'], 4),
+                round(row['d_ord_opt'], 4),
                 round(row['s_x'], 4),
                 round(row['s_d'], 4),
                 round(row['s_p'], 4),

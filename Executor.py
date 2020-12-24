@@ -32,9 +32,11 @@ class Executor:
             corrected_q_st_value = opt_order * self.p_value
 
         opt_stock = corrected_q_st_value * self.p_value
-        opt_time = math.sqrt(2 * self.t_value * self.cd_value / (self.w_value * self.cx_value)) / self.p_value
-        order_point = self.w_ontime_value * self.dt_value - (opt_order - opt_stock)
         orders_count = math.floor(self.w_value / opt_order)
+        opt_time = (opt_order * self.t_value) / self.w_value
+        loss_density = self.p_value ** 2
+        d_order_point = self.w_ontime_value * self.dt_value - (opt_order - opt_stock)
+        order_point = self.w_ontime_value * self.dt_value
 
         store_sum_price = 0.5 * math.pow(opt_stock, 2) * self.t_value * self.cx_value / opt_order
         delivery_sum_price = self.w_value * self.cd_value / opt_order
@@ -47,11 +49,13 @@ class Executor:
             'm_opt': opt_stock,
             't_opt': opt_time,
             'ord_opt': order_point,
+            'd_ord_opt': d_order_point,
             'orders': orders_count,
             's_x': store_sum_price,
             's_d': delivery_sum_price,
             's_p': product_sum_price,
             's_y': missing_sum_price,
+            'lossd': loss_density,
             's_sum': store_sum_price + product_sum_price + delivery_sum_price + missing_sum_price
         }
 
